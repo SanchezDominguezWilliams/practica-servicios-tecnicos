@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Servicios Técnicos</title>
+</head>
+<body>
+    <h1>Lista de Usuarios</h1>
+    <ul id="lista"></ul>
+
+
+    <script>
+        fetch('http://localhost:5000/usuarios')
+            .then(res => res.json())
+            .then(data => {
+                const lista = document.getElementById('lista');
+                data.forEach(user => {
+                    let li = document.createElement('li');
+                    li.textContent = `${user.nombre} - ${user.correo}`;
+                    lista.appendChild(li);
+                });
+            });
+    </script>
+</body>
+</html>
+
+
