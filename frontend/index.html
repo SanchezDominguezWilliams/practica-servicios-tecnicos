@@ -2,26 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Servicios Técnicos</title>
+    <title>Servicios Técnicos - Login</title>
 </head>
-<body>
-    <h1>Lista de Usuarios</h1>
-    <ul id="lista"></ul>
+<body style="font-size: 20px; font-family: Arial, sans-serif; padding: 40px;">
+    
+    <h2>Iniciar Sesión</h2>
+    
+    <form id="loginForm">
+        <div>
+            <input type="text" id="username" name="username" placeholder="Usuario" required style="font-size: 22px; padding: 10px; width: 350px; margin-bottom: 15px;">
+        </div>
+        <div>
+            <input type="password" id="password" name="password" placeholder="Contraseña" required style="font-size: 22px; padding: 10px; width: 350px; margin-bottom: 15px;">
+        </div>
+        <div>
+            <button type="submit" style="font-size: 22px; padding: 10px 25px;">Entrar</button>
+        </div>
+    </form>
 
+    <p id="mensaje" style="font-weight: bold; margin-top: 20px;"></p>
 
     <script>
-        fetch('http://localhost:5000/usuarios')
-            .then(res => res.json())
-            .then(data => {
-                const lista = document.getElementById('lista');
-                data.forEach(user => {
-                    let li = document.createElement('li');
-                    li.textContent = `${user.nombre} - ${user.correo}`;
-                    lista.appendChild(li);
+        const form = document.getElementById('loginForm');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const mensaje = document.getElementById('mensaje');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
                 });
-            });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    mensaje.style.color = 'green';
+                    mensaje.textContent = data.message;
+                } else {
+                    mensaje.style.color = 'red';
+                    mensaje.textContent = data.message;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                mensaje.style.color = 'red';
+                mensaje.textContent = 'Error de conexión con el servidor';
+            }
+        });
     </script>
 </body>
 </html>
-
 

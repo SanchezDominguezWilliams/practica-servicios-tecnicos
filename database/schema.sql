@@ -8,4 +8,3 @@ CREATE TABLE IT NOT EXISTS usuario (
     correo VARCHAR(100) UNIQUE NOT NULL
     telefono VARCHAR(15)
 );
-INSERT INTO usuarios (nombre, correo, telefono) VALUES ('Juan Pérez', 'juan@email.com', '5551234567');
