@@ -3,56 +3,73 @@ from flask_cors import CORS
 import mysql.connector
 
 app = Flask(__name__)
-CORS(app)  # Habilita CORS para permitir peticiones del frontend
+CORS(app)  # Permite la comunicación entre el frontend y Flask
 
-# Función para conectar a tu base de datos MySQL
+# Función para conectar a la base de datos MySQL
 def conectar():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="",
-        database="practica_servicios_tecnicos"
+        password="",  # Si tu usuario root tiene contraseña, escríbela aquí
+        database="practica-servicios-tecnicos"  # Base de datos con guion medio
     )
 
 # Ruta para el inicio de sesión (Login)
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    
-    if not data:
-        return jsonify({"success": False, "message": "Faltan datos en formato JSON"}), 400
-        
-    username = data.get('username')
-    password = data.get('password')
-    
+    datos = request.get_json(silent=True)
+   
+    if not datos:
+        return jsonify({
+            "success": False, 
+            "message": "Faltan datos en formato JSON"
+        }), 400
+       
+    username = datos.get('username')
+    password = datos.get('password')
+   
     if not username or not password:
-        return jsonify({"success": False, "message": "El usuario y la contraseña son obligatorios"}), 400
-        
+        return jsonify({
+            "success": False, 
+            "message": "El usuario y la contraseña son obligatorios"
+        }), 400
+       
     try:
         conexion = conectar()
         cursor = conexion.cursor(dictionary=True)
-        
-        # Consulta segura para verificar el usuario
-        query = "SELECT * FROM usuario WHERE nombre = %s AND password = %s"
-        cursor.execute(query, (username, password))
+       
+        # Consulta que busca en las columnas 'nombre' o 'correo' de tu tabla usuario
+        query = """
+            SELECT * FROM usuario 
+            WHERE (nombre = %s OR correo = %s) AND password = %s
+        """
+        cursor.execute(query, (username, username, password))
         user = cursor.fetchone()
-        
+       
         cursor.close()
         conexion.close()
-        
+       
         if user:
+            # Obtiene el nombre del usuario encontrado
+            nombre_usuario = user.get('nombre') or user.get('correo')
             return jsonify({
-                "success": True, 
-                "message": "Inicio de sesión exitoso",
-                "usuario": {"nombre": user.get('nombre'), "correo": user.get('correo')}
+                "success": True,
+                "message": "Inicio de sesión correcto",
+                "usuario": {"nombre": nombre_usuario}
             }), 200
         else:
-            return jsonify({"success": False, "message": "Usuario o contraseña incorrectos"}), 401
-            
+            return jsonify({
+                "success": False, 
+                "message": "Usuario o contraseña incorrectos"
+            }), 401
+           
     except Exception as e:
-        return jsonify({"success": False, "message": f"Error en el servidor: {str(e)}"}), 500
+        return jsonify({
+            "success": False, 
+            "message": f"Error en el servidor: {str(e)}"
+        }), 500
 
-# Ruta para ver la lista de usuarios
+# Ruta opcional para consultar la lista de usuarios
 @app.route('/usuarios', methods=['GET'])
 def obtener_usuarios():
     try:
